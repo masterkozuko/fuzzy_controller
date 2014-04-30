@@ -35,8 +35,10 @@ set(SDK ARDroneLib/)
 
 rosbuild_add_executable(fuzzy_lander src/fuzzy_controller_landing.cpp)
 rosbuild_add_executable(listener src/fuzzy_controller_listener.cpp)
+rosbuild_add_executable(fuzzy_tracker src/fuzzy_controller_ar_airial_tracking.cpp)
 target_link_libraries(fuzzy_lander fuzzylite)
 #target_link_libraries(fuzzy_lander ardrone_autonomy)
+target_link_libraries(fuzzy_tracker fuzzylite)
 target_link_libraries(listener fuzzylite)
 
 include_directories(~/fuerte_workspace/ardrone_autonomy/msg_gen/cpp/include/ardrone_autonomy/)
