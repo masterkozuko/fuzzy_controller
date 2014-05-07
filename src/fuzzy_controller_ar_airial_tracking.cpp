@@ -31,7 +31,7 @@
 #define DEFAULT_CTRL_HEIGHT 700.0
 
  //mah variables XD
-const int tagid_Sonar_Elevation_Controller = 1500;
+const int tagid_Sonar_Elevation_Controller = 555;
 int num_tags = 0;
 long sonar_reading = 0;
 int incoming_tag = 0;
@@ -151,18 +151,7 @@ float map_float(float x, float in_min, float in_max, float out_min, float out_ma
 
 void ar_track_pose(const visualization_msgs::MarkerConstPtr alvarmarkerPtr)//ar_track_alvar::AlvarMarkerConstPtr alvarmarkerPtr)
 {
-	//ROS_INFO("Entering ar_track thingy");
-	/*
-	ROS_INFO("id: %d", (int)alvarmarkerPtr->id);
-	ROS_INFO("pose/position/x: %f", (double)alvarmarkerPtr->pose.position.x);
-	ROS_INFO("pose/position/y: %f", (double)alvarmarkerPtr->pose.position.y);
-	ROS_INFO("pose/position/z: %f", (double)alvarmarkerPtr->pose.position.z);
-	ROS_INFO("pose/orientation/w: %f", (double)alvarmarkerPtr->pose.orientation.w);
-	ROS_INFO("pose/orientation/x: %f", (double)alvarmarkerPtr->pose.orientation.x);
-	ROS_INFO("pose/orientation/y: %f", (double)alvarmarkerPtr->pose.orientation.y);
-	ROS_INFO("pose/orientation/z: %f", (double)alvarmarkerPtr->pose.orientation.z);
-	*/
-	orientation_x = (double)alvarmarkerPtr->pose.orientation.x;
+
 	tag_pose_x = (double)alvarmarkerPtr->pose.position.x;
 	tag_pose_y = (double)alvarmarkerPtr->pose.position.y;
 	tag_pose_z = (double)alvarmarkerPtr->pose.position.z;
@@ -198,7 +187,7 @@ float Large_Tag_FuzzyController_Orientation_Rules(double current_position, doubl
 	}
 	return output;
 }
-float* Large_Tag_FuzzyController_Orientation_Main(float* current_position, float* target_position)
+float* FuzzyController_ArTracking_Main(float* current_position, float* target_position)
 {
 	//float error = current_position -target_position;
 	float* output;
@@ -210,10 +199,9 @@ float* Large_Tag_FuzzyController_Orientation_Main(float* current_position, float
 		if((incoming_tag  == tag_infos[i].getTagId()) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates)))
 		{
 			found = true;
-			output = tag_infos[i].processInput(4, current_position[0] - target_position[0], 
+			output = tag_infos[i].processInput(3, current_position[0] - target_position[0], 
 												current_position[1] - target_position[1], 
-												current_position[2] - target_position[2], 
-												current_position[3] - target_position[3]);
+												current_position[2] - target_position[2]);
 			ROS_INFO("Found tag %d, processing input",incoming_tag);
 			break;
 		}
@@ -251,8 +239,9 @@ float* Large_Tag_FuzzyController_Orientation_Main(float* current_position, float
 
  
  bool keep_running = false;
- bool drone_takeoff = false;
- void landCb(std_msgs::EmptyConstPtr)
+ bool drone_takeoff = false;	
+ 
+void landCb(std_msgs::EmptyConstPtr)
 {
 	drone_takeoff =false;
 	ROS_INFO("command 'LAND' dectected");
@@ -295,6 +284,18 @@ struct ControlCommand
 	}
 	double yaw, roll, pitch, gaz;
 };
+
+void setEngineArTracking_main_control(TagInfoAce& ts)
+{
+
+	
+	
+	/*ts.setEngine(engine, 3, inputVariable1, outputVariable1,
+	inputVariable2, outputVariable2, 
+	inputVariable3, outputVariable3;
+	ROS_INFO("Set up fuzzy system for Tracking ArTag id:10");
+	*/
+}
 	
 	
 void setEngineSonarElevation(TagInfoAce& ts)
@@ -352,19 +353,6 @@ void setEngineSonarElevation(TagInfoAce& ts)
 	ROS_INFO("Set up fuzzy system for sonar elevation");
 }
 
-void setEngineArTracker(TagInfoAce& ts)
-{
-	//Controller Start Here
-	
-	
-	
-	//Controller End Here
-	
-	//Controller COfiguration Here
-	ts.setEngine(engine, inputVariable1, outputVariable1);
-	ROS_INFO("Set up fuzzy system for AR Tracking");
-}
-
 int main(int argc, char **argv)
 {
 	ROS_INFO("Main now Running!!");
@@ -378,7 +366,7 @@ int main(int argc, char **argv)
    * You must call one of the versions of ros::init() before using any other
    * part of the ROS system.
    */
-  ros::init(argc, argv, "fuzzy_ar_tracker");
+  ros::init(argc, argv, "fuzzy_lander");
 
   /**
    * NodeHandle is the main access point to communications with the ROS system.
@@ -404,20 +392,20 @@ int main(int argc, char **argv)
    * than we can send them, the number here specifies how many messages to
    * buffer up before throwing some away.
    */
-  ros::Publisher chatter_pub 		= n.advertise<std_msgs::String>(n.resolveName("ardrone/navdata/tnt"), 1000);
-  ros::Publisher vel_pub	   	= n.advertise<geometry_msgs::Twist>(n.resolveName("cmd_vel"),1);
-  ros::Subscriber vel_sub	   	= n.subscribe(n.resolveName("cmd_vel"),50, velCb);
-  ros::Publisher tum_ardrone_pub	= n.advertise<std_msgs::String>(n.resolveName("tum_ardrone/com"),50);
-  //ros::Publisher dronepose_sub	= n.subscribe(n.resolveName("ardrone/predictedPose"),50, droneposeCb);
-  ros::Subscriber  navdata_sub	   	= n.subscribe(n.resolveName("ardrone/navdata"),50, navdataCb);
-  ros::Publisher takeoff_pu1b	   	= n.advertise<std_msgs::Empty>(n.resolveName("ardrone/takeoff"),1);
-  ros::Publisher land_pub	   	= n.advertise<std_msgs::Empty>(n.resolveName("ardrone/land"),1);
-  ros::Publisher toggleState_pub	= n.advertise<std_msgs::Empty>(n.resolveName("ardrone/reset"),1);
-  ros::Subscriber takeoff_sub	   	= n.subscribe(n.resolveName("ardrone/takeoff"),1, takeoffCb);
-  ros::Subscriber land_sub	   	= n.subscribe(n.resolveName("ardrone/land"),1, landCb);
-  ros::Subscriber toggleState_sub	= n.subscribe(n.resolveName("ardrone/reset"),1, toggleStateCb);
-  ros::ServiceClient toggleCam_srv      = n.serviceClient<std_srvs::Empty>(n.resolveName("ardrone/togglecam"),1);
-  ros::ServiceClient flattrim_srv       = n.serviceClient<std_srvs::Empty>(n.resolveName("ardrone/flattrim"),1);
+  ros::Publisher chatter_pub = n.advertise<std_msgs::String>(n.resolveName("ardrone/navdata/tnt"), 1000);
+  ros::Publisher vel_pub	   = n.advertise<geometry_msgs::Twist>(n.resolveName("cmd_vel"),1);
+  ros::Subscriber vel_sub	   = n.subscribe(n.resolveName("cmd_vel"),50, velCb);
+  ros::Publisher tum_ardrone_pub	   = n.advertise<std_msgs::String>(n.resolveName("tum_ardrone/com"),50);
+  //ros::Publisher dronepose_sub	   = n.subscribe(n.resolveName("ardrone/predictedPose"),50, droneposeCb);
+  ros::Subscriber  navdata_sub	   = n.subscribe(n.resolveName("ardrone/navdata"),50, navdataCb);
+  ros::Publisher takeoff_pu1b	   = n.advertise<std_msgs::Empty>(n.resolveName("ardrone/takeoff"),1);
+  ros::Publisher land_pub	   = n.advertise<std_msgs::Empty>(n.resolveName("ardrone/land"),1);
+  ros::Publisher toggleState_pub	   = n.advertise<std_msgs::Empty>(n.resolveName("ardrone/reset"),1);
+  ros::Subscriber takeoff_sub	   = n.subscribe(n.resolveName("ardrone/takeoff"),1, takeoffCb);
+  ros::Subscriber land_sub	   = n.subscribe(n.resolveName("ardrone/land"),1, landCb);
+  ros::Subscriber toggleState_sub	   = n.subscribe(n.resolveName("ardrone/reset"),1, toggleStateCb);
+  ros::ServiceClient toggleCam_srv        = n.serviceClient<std_srvs::Empty>(n.resolveName("ardrone/togglecam"),1);
+  ros::ServiceClient flattrim_srv         = n.serviceClient<std_srvs::Empty>(n.resolveName("ardrone/flattrim"),1);
   
   //ar_Track_alvar stuff
   ros::Subscriber  ar_track_alvar_pose	   = n.subscribe(n.resolveName("visualization_marker"),50, ar_track_pose);
@@ -425,9 +413,15 @@ int main(int argc, char **argv)
 
   
   tag_infos[0] = TagInfoAce(10);
-  num_tags = 1;
+  tag_infos[1] = TagInfoAce(170);
+  tag_infos[2] = TagInfoAce(10);
+  tag_infos[3] = TagInfoAce(tagid_Sonar_Elevation_Controller);  
+  num_tags = 4;
   
-  setEngineArTracker(tag_infos[0]);
+  //setEngineLargeTag_z_rot(tag_infos[2]);
+  //setEngineLargeTag_X_controller(tag_infos[2]);
+  setEngineSonarElevation(tag_infos[3]);
+  setEngineArTracking_main_control(tag_infos[0]);
  
   ros::Rate loop_rate(10);
 
@@ -457,7 +451,7 @@ int main(int argc, char **argv)
 		  float output_velocity_x = 0;
 		  float output_velocity_y = 0;
 		  float output_velocity_z = 0;
-		  float output_velocity_z_rot = 0;
+		  
 		  ros::Time TimeHere = ros::Time::now();
 		  TimeHereSeconds = TimeHere.toSec();
 		  
@@ -467,21 +461,20 @@ int main(int argc, char **argv)
 		  if ((!tag_detected) & ((TimeHereSeconds - LastTagTimeSeconds) > (timeOut_betweenControlStates)))
 		  {
 			  //ROS_INFO("runing FuzzyController_5Rules_Sonar_Elevation");
-			  output_velocity_z = setEngineSonarElevation(sonar_reading,700);
+			  output_velocity_z = FuzzyController_5Rules_Sonar_Elevation(sonar_reading,700);
 		  }
 		  
 		  if ((incoming_tag == 0) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates/5)))
 		  {
 			  //ROS_INFO("runing Large_Tag_FuzzyController_Orientation_Rules");
-			  float inputs[4] = {orientation_x,tag_pose_x,tag_pose_z,tag_pose_y};
+			  float inputs[3] = {tag_pose_x,tag_pose_z,tag_pose_y};
 				  
-			  float desired_inputs[4] = {DEFAULT_CTRL_ORIENTATION,0.0,0.0,0.0};
+			  float desired_inputs[3] = {0.0,2.0,0.0};
 
 			  ROS_INFO("Calling main orientation scheme");
-			  float* outputs = Large_Tag_FuzzyController_Orientation_Main(inputs, desired_inputs);
+			  float* outputs = FuzzyController_ArTracking_Main(inputs, desired_inputs);
 			  ROS_INFO("Extracting outputs");
-			  ROS_INFO("They are: %f %f %f %f", outputs[0], outputs[1], outputs[2], outputs[3]);
-			  output_velocity_z_rot = outputs[0];  
+			  ROS_INFO("They are: X=%f Y=%f Z=%f", outputs[1], outputs[2], outputs[3]);
 			  output_velocity_y = outputs[1];
 			  output_velocity_x = outputs[2];
 			  output_velocity_z = outputs[3];
@@ -510,7 +503,6 @@ int main(int argc, char **argv)
 		  //inline 				         ControlCommand(double roll, double pitch, double yaw, double gaz)
 		  ControlCommand cmd =   ControlCommand(output_velocity_y,output_velocity_x,0,output_velocity_z);
 		  geometry_msgs::Twist cmdT;
-		  cmdT.angular.z = output_velocity_z_rot;//-cmd.yaw;
 		  cmdT.linear.z = cmd.gaz;
 		  cmdT.linear.x = -cmd.pitch;
 		  cmdT.linear.y = -cmd.roll;
