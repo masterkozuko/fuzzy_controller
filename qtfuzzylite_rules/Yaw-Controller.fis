@@ -1,0 +1,47 @@
+[System]
+Name='Yaw-Controller'
+Type='mamdani'
+Version=2.0
+NumInputs=2
+NumOutputs=1
+NumRules=9
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='Error(quad-tag)'
+Range=[-1 1]
+NumMFs=3
+MF1='Z':'trimf',[-0.2354 0 0.225]
+MF2='P':'smf',[-0.0132275132275134 0.22]
+MF3='N':'zmf',[-0.224867724867725 0.00265]
+
+[Input2]
+Name='de/dt'
+Range=[-3 3]
+NumMFs=3
+MF1='N':'zmf',[-1.52 -0.00794]
+MF2='Z':'trimf',[-1.46825396825397 0 1.53]
+MF3='P':'smf',[-0.0555555555555554 1.52]
+
+[Output1]
+Name='Yaw-Commands'
+Range=[-1 1]
+NumMFs=3
+MF1='Z':'trimf',[-0.0979 0 0.108465608465608]
+MF2='N':'zmf',[-0.912698412698413 -0.0132]
+MF3='P':'smf',[0.0153 0.902116402116402]
+
+[Rules]
+3 1, 2 (1) : 1
+3 2, 2 (1) : 1
+3 3, 1 (1) : 1
+1 1, 2 (1) : 1
+1 2, 1 (1) : 1
+1 3, 3 (1) : 1
+2 1, 1 (1) : 1
+2 2, 3 (1) : 1
+2 3, 3 (1) : 1

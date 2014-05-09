@@ -287,10 +287,10 @@ struct ControlCommand
 
 void setEngineArTracking_main_control(TagInfoAce& ts)
 {
-	fl::Engine* engine = new fl::Engine;
-	engine->setName("Hoover");
+fl::Engine* engine = new fl::Engine;
+engine->setName("Hoover");
 
-	fl::InputVariable* inputVariable1 = new fl::InputVariable;
+fl::InputVariable* inputVariable1 = new fl::InputVariable;
 inputVariable1->setEnabled(true);
 inputVariable1->setName("ar_pose_x");
 inputVariable1->setRange(-1.000, 1.000);
@@ -326,17 +326,17 @@ engine->addInputVariable(inputVariable3);
 fl::OutputVariable* outputVariable1 = new fl::OutputVariable;
 outputVariable1->setEnabled(true);
 outputVariable1->setName("cmd_x_vel");
-outputVariable1->setRange(-1.000, 1.000);
+outputVariable1->setRange(-0.750, 0.750);
 outputVariable1->fuzzyOutput()->setAccumulation(new fl::Maximum);
 outputVariable1->setDefuzzifier(new fl::Centroid(200));
 outputVariable1->setDefaultValue(fl::nan);
 outputVariable1->setLockValidOutput(false);
 outputVariable1->setLockOutputRange(false);
 outputVariable1->addTerm(new fl::Gaussian("stay", 0.000, 0.070));
-outputVariable1->addTerm(new fl::ZShape("go_far_left", -1.000, 0.010));
+outputVariable1->addTerm(new fl::ZShape("go_far_left", -0.500, -0.470));
 outputVariable1->addTerm(new fl::Gaussian("go_left", -0.280, 0.080));
 outputVariable1->addTerm(new fl::Gaussian("go_right", 0.280, 0.080));
-outputVariable1->addTerm(new fl::SShape("go_far_right", 0.010, 1.000));
+outputVariable1->addTerm(new fl::SShape("go_far_right", 0.450, 0.500));
 engine->addOutputVariable(outputVariable1);
 
 fl::OutputVariable* outputVariable2 = new fl::OutputVariable;
@@ -348,11 +348,11 @@ outputVariable2->setDefuzzifier(new fl::Centroid(200));
 outputVariable2->setDefaultValue(fl::nan);
 outputVariable2->setLockValidOutput(false);
 outputVariable2->setLockOutputRange(false);
-outputVariable2->addTerm(new fl::ZShape("fast_backward", -2.000, -0.120));
-outputVariable2->addTerm(new fl::Gaussian("backward", -0.800, 0.250));
+outputVariable2->addTerm(new fl::ZShape("fast_forward", -2.000, -0.120));
+outputVariable2->addTerm(new fl::Gaussian("forward", -0.800, 0.250));
 outputVariable2->addTerm(new fl::Gaussian("stay", 0.000, 0.180));
-outputVariable2->addTerm(new fl::Gaussian("forward", 0.830, 0.250));
-outputVariable2->addTerm(new fl::SShape("fast_forward", 0.120, 2.000));
+outputVariable2->addTerm(new fl::Gaussian("backward", 0.830, 0.250));
+outputVariable2->addTerm(new fl::SShape("fast_backward", 0.120, 2.000));
 engine->addOutputVariable(outputVariable2);
 
 fl::OutputVariable* outputVariable3 = new fl::OutputVariable;
@@ -380,8 +380,8 @@ ruleBlock->setActivation(new fl::Minimum);
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Left then cmd_x_vel is go_far_right", engine));
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Center then cmd_x_vel is stay", engine));
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Left then cmd_x_vel is go_right", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Right then cmd_x_vel is go_left", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Right then cmd_x_vel is go_far_left", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Right then cmd_x_vel is go_far_left", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Right then cmd_x_vel is stay", engine));
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is too_close then cmd_z_vel is fast_backward", engine));
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is close then cmd_z_vel is backward", engine));
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is centered then cmd_z_vel is stay", engine));
@@ -393,6 +393,8 @@ ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is centered then cmd_y_vel is s
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is low then cmd_y_vel is go_up", engine));
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is too_low then cmd_y_vel is go_higher", engine));
 engine->addRuleBlock(ruleBlock);
+
+
 
 	
 	
