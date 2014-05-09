@@ -1,0 +1,17 @@
+<!--
+	 Author: Josue Cruz-Lambert, Univeristy of Texas at San Antonio
+	Version: July 12, 2013
+-->
+
+<gazebo version="1.0">
+	<model name="ar_track_marker_4" static="true">
+		<origin pose="0 0 0 0 0 0" />
+		<link name="link">
+			<visual name="visual">
+				<geometry>
+					<mesh filename="ar_track_markers/ar_track_marker_4.dae" scale="1.0 1.0 1.0" />
+				</geometry>
+			</visual>
+		</link>
+	</model>
+</gazebo>
