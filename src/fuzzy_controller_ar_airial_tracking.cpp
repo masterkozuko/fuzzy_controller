@@ -396,11 +396,11 @@ engine->addRuleBlock(ruleBlock);
 
 	
 	
-	/*ts.setEngine(engine, 3, inputVariable1, outputVariable1,
+	ts.setEngine(engine, 3, inputVariable1, outputVariable1,
 	inputVariable2, outputVariable2, 
-	inputVariable3, outputVariable3;
+	inputVariable3, outputVariable3);
 	ROS_INFO("Set up fuzzy system for Tracking ArTag id:10");
-	*/
+	
 }
 	
 	
@@ -575,10 +575,10 @@ int main(int argc, char **argv)
 			  ROS_INFO("Calling main control scheme");
 			  double* outputs = FuzzyController_ArTracking_Main(inputs, desired_inputs);
 			  ROS_INFO("Extracting outputs");
-			  ROS_INFO("They are: X=%f Y=%f Z=%f", outputs[1], outputs[2], outputs[3]);
-			  output_velocity_x = outputs[1];
-			  output_velocity_z = outputs[2];
-			  output_velocity_y = outputs[3];
+			  ROS_INFO("They are: X=%f Y=%f Z=%f", outputs[0], outputs[1], outputs[2]);
+			  output_velocity_x = outputs[0];
+			  output_velocity_z = outputs[1];
+			  output_velocity_y = outputs[2];
 			  
 		  }
 		  if ((incoming_tag > 0) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates)))
