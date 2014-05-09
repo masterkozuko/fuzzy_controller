@@ -177,7 +177,7 @@ void ar_track_pose(const visualization_msgs::MarkerConstPtr alvarmarkerPtr)//ar_
  
 float Large_Tag_FuzzyController_Orientation_Rules(double current_position, double target_position = DEFAULT_CTRL_ORIENTATION)
 {
-	float error = current_position - target_position;
+	float error = current_position -target_position;
 	float output = 0.0;
 	bool found = false;
 	
@@ -210,9 +210,10 @@ float* Large_Tag_FuzzyController_Orientation_Main(float* current_position, float
 		if((incoming_tag  == tag_infos[i].getTagId()) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates)))
 		{
 			found = true;
-			output = tag_infos[i].processInput(3, current_position[0] - target_position[0], 
+			output = tag_infos[i].processInput(4, current_position[0] - target_position[0], 
 												current_position[1] - target_position[1], 
-												current_position[2] - target_position[2]);
+												current_position[2] - target_position[2], 
+												current_position[3] - target_position[3]);
 			ROS_INFO("Found tag %d, processing input",incoming_tag);
 			break;
 		}
@@ -297,119 +298,146 @@ struct ControlCommand
 
 void setEngineLargeTag_main_control(TagInfoAce& ts)
 {
-	
-	ROS_INFO("fuzzy EngineLargeTag");
-	
 	fl::Engine* engine = new fl::Engine;
-	engine->setName("Hoover");
-fl::InputVariable* inputVariable1 = new fl::InputVariable;
-inputVariable1->setEnabled(true);
-inputVariable1->setName("ar_pose_x");
-inputVariable1->setRange(-1.000, 1.000);
-inputVariable1->addTerm(new fl::Trapezoid("Far_Left", -30.000, -0.800, -0.740, -0.510));
-inputVariable1->addTerm(new fl::Triangle("Left", -0.660, -0.360, 0.000));
-inputVariable1->addTerm(new fl::Triangle("Center", -0.222, 0.000, 0.222));
-inputVariable1->addTerm(new fl::Triangle("Right", 0.000, 0.366, 0.674));
-inputVariable1->addTerm(new fl::Trapezoid("Far_Right", 0.538, 0.730, 10.000, 30.000));
-engine->addInputVariable(inputVariable1);
-
-fl::InputVariable* inputVariable2 = new fl::InputVariable;
-inputVariable2->setEnabled(true);
-inputVariable2->setName("ar_pose_y");
-inputVariable2->setRange(-2.000, 2.000);
-inputVariable2->addTerm(new fl::Ramp("too_close", -0.600, -1.576));
-inputVariable2->addTerm(new fl::Triangle("far", 0.000, 0.660, 1.268));
-inputVariable2->addTerm(new fl::Triangle("centered", -0.600, 0.000, 0.600));
-inputVariable2->addTerm(new fl::Triangle("close", -1.172, -0.600, 0.000));
-inputVariable2->addTerm(new fl::Ramp("too_far", 0.600, 1.576));
-engine->addInputVariable(inputVariable2);
-
-fl::InputVariable* inputVariable3 = new fl::InputVariable;
-inputVariable3->setEnabled(true);
-inputVariable3->setName("ar_pose_z");
-inputVariable3->setRange(-2.000, 2.000);
-inputVariable3->addTerm(new fl::Ramp("too_low", 0.600, 1.444));
-inputVariable3->addTerm(new fl::Triangle("high", -1.232, -0.668, 0.000));
-inputVariable3->addTerm(new fl::Triangle("centered", -0.360, 0.000, 0.360));
-inputVariable3->addTerm(new fl::Triangle("low", 0.000, 0.672, 1.424));
-inputVariable3->addTerm(new fl::Ramp("too_high", -0.600, -1.424));
-engine->addInputVariable(inputVariable3);
-
-fl::OutputVariable* outputVariable1 = new fl::OutputVariable;
-outputVariable1->setEnabled(true);
-outputVariable1->setName("cmd_x_vel");
-outputVariable1->setRange(-1.000, 1.000);
-outputVariable1->fuzzyOutput()->setAccumulation(new fl::Maximum);
-outputVariable1->setDefuzzifier(new fl::Centroid(200));
-outputVariable1->setDefaultValue(fl::nan);
-outputVariable1->setLockValidOutput(false);
-outputVariable1->setLockOutputRange(false);
-outputVariable1->addTerm(new fl::Gaussian("stay", 0.000, 0.070));
-outputVariable1->addTerm(new fl::ZShape("go_far_left", -1.000, 0.010));
-outputVariable1->addTerm(new fl::Gaussian("go_left", -0.280, 0.080));
-outputVariable1->addTerm(new fl::Gaussian("go_right", 0.280, 0.080));
-outputVariable1->addTerm(new fl::SShape("go_far_right", 0.010, 1.000));
-engine->addOutputVariable(outputVariable1);
-
-fl::OutputVariable* outputVariable2 = new fl::OutputVariable;
-outputVariable2->setEnabled(true);
-outputVariable2->setName("cmd_z_vel");
-outputVariable2->setRange(-2.000, 2.000);
-outputVariable2->fuzzyOutput()->setAccumulation(new fl::Maximum);
-outputVariable2->setDefuzzifier(new fl::Centroid(200));
-outputVariable2->setDefaultValue(fl::nan);
-outputVariable2->setLockValidOutput(false);
-outputVariable2->setLockOutputRange(false);
-outputVariable2->addTerm(new fl::ZShape("fast_backward", -2.000, -0.120));
-outputVariable2->addTerm(new fl::Gaussian("backward", -0.800, 0.250));
-outputVariable2->addTerm(new fl::Gaussian("stay", 0.000, 0.180));
-outputVariable2->addTerm(new fl::Gaussian("forward", 0.830, 0.250));
-outputVariable2->addTerm(new fl::SShape("fast_forward", 0.120, 2.000));
-engine->addOutputVariable(outputVariable2);
-
-fl::OutputVariable* outputVariable3 = new fl::OutputVariable;
-outputVariable3->setEnabled(true);
-outputVariable3->setName("cmd_y_vel");
-outputVariable3->setRange(-2.000, 2.000);
-outputVariable3->fuzzyOutput()->setAccumulation(new fl::Maximum);
-outputVariable3->setDefuzzifier(new fl::Centroid(200));
-outputVariable3->setDefaultValue(fl::nan);
-outputVariable3->setLockValidOutput(false);
-outputVariable3->setLockOutputRange(false);
-outputVariable3->addTerm(new fl::SShape("go_higher", 0.120, 2.000));
-outputVariable3->addTerm(new fl::Gaussian("go_up", 0.760, 0.210));
-outputVariable3->addTerm(new fl::Gaussian("stay", 0.000, 0.150));
-outputVariable3->addTerm(new fl::Gaussian("go_down", -0.760, 0.210));
-outputVariable3->addTerm(new fl::ZShape("go_lower", -2.000, -0.120));
-engine->addOutputVariable(outputVariable3);
-
-fl::RuleBlock* ruleBlock = new fl::RuleBlock;
-ruleBlock->setEnabled(true);
-ruleBlock->setName("");
-ruleBlock->setConjunction(new fl::Minimum);
-ruleBlock->setDisjunction(new fl::Maximum);
-ruleBlock->setActivation(new fl::Minimum);
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Left then cmd_x_vel is go_far_right", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Center then cmd_x_vel is stay", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Left then cmd_x_vel is go_right", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Right then cmd_x_vel is go_left", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Right then cmd_x_vel is go_far_left", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is too_close then cmd_z_vel is fast_backward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is close then cmd_z_vel is backward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is centered then cmd_z_vel is stay", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is too_far then cmd_z_vel is fast_forward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is far then cmd_z_vel is forward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is too_high then cmd_y_vel is go_lower", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is high then cmd_y_vel is go_down", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is centered then cmd_y_vel is stay", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is low then cmd_y_vel is go_up", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is too_low then cmd_y_vel is go_higher", engine));
-engine->addRuleBlock(ruleBlock);
-
+	engine->setName("qtfuzzylite");
 	
-	ts.setEngine(engine, 3, inputVariable1, outputVariable1,
+	fl::InputVariable* inputVariable1 = new fl::InputVariable;
+	inputVariable1->setEnabled(true);
+	inputVariable1->setName("orientation_x");
+	inputVariable1->setRange(-1.000, 1.000);
+	inputVariable1->addTerm(new fl::ZShape("way_left", -1.000, -0.180));
+	inputVariable1->addTerm(new fl::Gaussian("a_little_left", -0.320, 0.110));
+	inputVariable1->addTerm(new fl::Bell("On_Target", 0.000, 0.030, 3.000));
+	inputVariable1->addTerm(new fl::Gaussian("a_little_right", 0.320, 0.110));
+	inputVariable1->addTerm(new fl::SShape("way_right", 0.180, 1.000));
+	engine->addInputVariable(inputVariable1);
+	
+	fl::InputVariable* inputVariable2 = new fl::InputVariable;
+	inputVariable2->setEnabled(true);
+	inputVariable2->setName("displacement_x");
+	inputVariable2->setRange(-0.060, 0.060);
+	inputVariable2->addTerm(new fl::ZShape("way_left", -0.060, -0.020));
+	inputVariable2->addTerm(new fl::Gaussian("too_left", -0.020, 0.006));
+	inputVariable2->addTerm(new fl::Gaussian("centered", 0.000, 0.004));
+	inputVariable2->addTerm(new fl::Gaussian("too_right", 0.020, 0.006));
+	inputVariable2->addTerm(new fl::SShape("way_right", 0.020, 0.060));
+	engine->addInputVariable(inputVariable2);
+	
+	fl::InputVariable* inputVariable3 = new fl::InputVariable;
+	inputVariable3->setEnabled(true);
+	inputVariable3->setName("displacement_z");
+	inputVariable3->setRange(0.000, 0.040);
+	inputVariable3->addTerm(new fl::Gaussian("too_low", -0.008, 0.003));
+	inputVariable3->addTerm(new fl::Gaussian("centered", 0.000, 0.004));
+	inputVariable3->addTerm(new fl::Gaussian("too_high", 0.014, 0.004));
+	inputVariable3->addTerm(new fl::SShape("way_high", 0.011, 0.040));
+	engine->addInputVariable(inputVariable3);
+
+	fl::InputVariable* inputVariable4 = new fl::InputVariable;
+	inputVariable4->setEnabled(true);
+	inputVariable4->setName("displacement_y");
+	inputVariable4->setRange(-0.020, 0.020);
+	inputVariable4->addTerm(new fl::ZShape("way_high", -0.020, -0.006));
+	inputVariable4->addTerm(new fl::Gaussian("too_high", -0.009, 0.004));
+	inputVariable4->addTerm(new fl::Gaussian("centered", 0.000, 0.002));
+	inputVariable4->addTerm(new fl::Gaussian("too_low", 0.010, 0.004));
+	inputVariable4->addTerm(new fl::SShape("way_low", 0.008, 0.020));
+	engine->addInputVariable(inputVariable4);
+
+	fl::OutputVariable* outputVariable1 = new fl::OutputVariable;
+	outputVariable1->setEnabled(true);
+	outputVariable1->setName("cmd_vel_z_rot");
+	outputVariable1->setRange(-0.400, 0.400);
+	outputVariable1->fuzzyOutput()->setAccumulation(new fl::Maximum);
+	outputVariable1->setDefuzzifier(new fl::Centroid(200));
+	outputVariable1->setDefaultValue(0.000);
+	outputVariable1->setLockValidOutput(false);
+	outputVariable1->setLockOutputRange(false);
+	outputVariable1->addTerm(new fl::ZShape("large_turn_left", -0.750, -0.100));
+	outputVariable1->addTerm(new fl::Gaussian("small_turn_left", -0.130, 0.030));
+	outputVariable1->addTerm(new fl::Bell("hold_direction", 0.000, 0.010, 1.000));
+	outputVariable1->addTerm(new fl::Gaussian("small_turn_right", 0.130, 0.030));
+	outputVariable1->addTerm(new fl::SShape("large_turn_right", 0.150, 0.750));
+	engine->addOutputVariable(outputVariable1);
+	fl::OutputVariable* outputVariable2 = new fl::OutputVariable;
+	outputVariable2->setEnabled(true);
+	outputVariable2->setName("cmd_vel_y_linear");
+	outputVariable2->setRange(-0.750, 0.750);
+	outputVariable2->fuzzyOutput()->setAccumulation(new fl::Maximum);
+	outputVariable2->setDefuzzifier(new fl::Centroid(200));
+	outputVariable2->setDefaultValue(0.000);
+	outputVariable2->setLockValidOutput(false);
+	outputVariable2->setLockOutputRange(false);
+	outputVariable2->addTerm(new fl::ZShape("large_move_right", -0.750, -0.115));
+	outputVariable2->addTerm(new fl::Gaussian("small_move_right", -0.125, 0.035));
+	outputVariable2->addTerm(new fl::Gaussian("do_nothing", 0.000, 0.020));
+	outputVariable2->addTerm(new fl::Gaussian("small_move_left", 0.125, 0.035));
+	outputVariable2->addTerm(new fl::SShape("large_move_left", 0.120, 0.750));
+	engine->addOutputVariable(outputVariable2);
+	
+	fl::OutputVariable* outputVariable3 = new fl::OutputVariable;
+	outputVariable3->setEnabled(true);
+	outputVariable3->setName("cmd_vel_x_linear");
+	outputVariable3->setRange(-0.750, 0.750);
+	outputVariable3->fuzzyOutput()->setAccumulation(new fl::Maximum);
+	outputVariable3->setDefuzzifier(new fl::Centroid(200));
+	outputVariable3->setDefaultValue(0.000);
+	outputVariable3->setLockValidOutput(false);
+	outputVariable3->setLockOutputRange(false);
+	outputVariable3->addTerm(new fl::ZShape("large_move_backward", -0.750, -0.120));
+	outputVariable3->addTerm(new fl::Gaussian("small_move_backward", -0.125, 0.035));
+	outputVariable3->addTerm(new fl::Gaussian("do_nothing", 0.000, 0.035));
+	outputVariable3->addTerm(new fl::Gaussian("small_move_foward", 0.125, 0.035));
+	outputVariable3->addTerm(new fl::SShape("large_move_foward", 0.125, 0.750));
+	engine->addOutputVariable(outputVariable3);
+	
+	fl::OutputVariable* outputVariable4 = new fl::OutputVariable;
+	outputVariable4->setEnabled(true);
+	outputVariable4->setName("cmd_vel_z_linear");
+	outputVariable4->setRange(-0.450, 0.750);
+	outputVariable4->fuzzyOutput()->setAccumulation(new fl::Maximum);
+	outputVariable4->setDefuzzifier(new fl::Centroid(200));
+	outputVariable4->setDefaultValue(0.000);
+	outputVariable4->setLockValidOutput(false);
+	outputVariable4->setLockOutputRange(false);
+	outputVariable4->addTerm(new fl::ZShape("large_move_down", -1.000, -0.200));
+	outputVariable4->addTerm(new fl::Gaussian("small_move_down", -0.200, 0.080));
+	outputVariable4->addTerm(new fl::Gaussian("do_nothing", 0.000, 0.080));
+	outputVariable4->addTerm(new fl::Gaussian("small_move_up", 0.200, 0.080));
+	outputVariable4->addTerm(new fl::SShape("large_move_up", 0.200, 1.000));
+	engine->addOutputVariable(outputVariable4);
+	
+	fl::RuleBlock* ruleBlock = new fl::RuleBlock;
+	ruleBlock->setEnabled(true);
+	ruleBlock->setName("");
+	ruleBlock->setConjunction(new fl::Minimum);
+	ruleBlock->setDisjunction(new fl::Maximum);
+	ruleBlock->setActivation(new fl::Minimum);
+	ruleBlock->addRule(fl::Rule::parse("if orientation_x is way_left then cmd_vel_z_rot is large_turn_right", engine));
+	ruleBlock->addRule(fl::Rule::parse("if orientation_x is a_little_left then cmd_vel_z_rot is small_turn_right", engine));
+	ruleBlock->addRule(fl::Rule::parse("if orientation_x is On_Target then cmd_vel_z_rot is hold_direction", engine));
+	ruleBlock->addRule(fl::Rule::parse("if orientation_x is a_little_right then cmd_vel_z_rot is small_turn_left", engine));
+	ruleBlock->addRule(fl::Rule::parse("if orientation_x is way_right then cmd_vel_z_rot is large_turn_left", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_x is way_left then cmd_vel_y_linear is large_move_right", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_x is too_left then cmd_vel_y_linear is small_move_right", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_x is centered then cmd_vel_y_linear is do_nothing", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_x is too_right then cmd_vel_y_linear is small_move_left", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_x is way_right then cmd_vel_y_linear is large_move_left", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_y is way_low then cmd_vel_x_linear is large_move_backward", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_y is too_low then cmd_vel_x_linear is small_move_backward", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_y is centered then cmd_vel_x_linear is do_nothing", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_y is too_high then cmd_vel_x_linear is small_move_foward", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_y is way_high then cmd_vel_x_linear is large_move_foward", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_z is way_high then cmd_vel_z_linear is large_move_down", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_z is too_high then cmd_vel_z_linear is small_move_down", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_z is centered then cmd_vel_z_linear is do_nothing", engine));
+	ruleBlock->addRule(fl::Rule::parse("if displacement_z is too_low then cmd_vel_z_linear is small_move_up", engine));
+	engine->addRuleBlock(ruleBlock);
+	
+	ts.setEngine(engine, 4, inputVariable1, outputVariable1,
 	inputVariable2, outputVariable2, 
-	inputVariable3, outputVariable3);
+	inputVariable3, outputVariable3,
+	inputVariable4, outputVariable4);
 	ROS_INFO("Set up fuzzy system for Large Tag");
 }
 	
@@ -747,7 +775,7 @@ int main(int argc, char **argv)
   //tag_infos[0] = TagInfoAce(0, engine, input , output);
 
   
-  tag_infos[0] = TagInfoAce(10);
+  tag_infos[0] = TagInfoAce(7);
   tag_infos[1] = TagInfoAce(170);
   tag_infos[2] = TagInfoAce(0);
   tag_infos[3] = TagInfoAce(tagid_Sonar_Elevation_Controller);  
@@ -807,17 +835,18 @@ int main(int argc, char **argv)
 		  if ((incoming_tag == 0) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates/5)))
 		  {
 			  //ROS_INFO("runing Large_Tag_FuzzyController_Orientation_Rules");
-			  float inputs[3] = {tag_pose_x,tag_pose_y,tag_pose_z};
+			  float inputs[4] = {orientation_x,tag_pose_x,tag_pose_z,tag_pose_y};
 				  
-			  float desired_inputs[3] = {0.0,0.0,0.0};
+			  float desired_inputs[4] = {DEFAULT_CTRL_ORIENTATION,0.0,0.0,0.0};
 
 			  ROS_INFO("Calling main orientation scheme");
 			  float* outputs = Large_Tag_FuzzyController_Orientation_Main(inputs, desired_inputs);
 			  ROS_INFO("Extracting outputs");
-			  ROS_INFO("They are: %f %f %f %f", outputs[0], outputs[1], outputs[2]);
-			  output_velocity_x = outputs[0];
-			  output_velocity_z = outputs[1];
-			  output_velocity_y = outputs[2];
+			  ROS_INFO("They are: %f %f %f %f", outputs[0], outputs[1], outputs[2], outputs[3]);
+			  output_velocity_z_rot = outputs[0];  
+			  output_velocity_y = outputs[1];
+			  output_velocity_x = outputs[2];
+			  output_velocity_z = outputs[3];
 			  
 		  }
 		  if ((incoming_tag > 0) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates)))
