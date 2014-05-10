@@ -288,10 +288,14 @@ struct ControlCommand
 void setEngineArTracking_main_control(TagInfoAce& ts)
 {
 
+
+	
+	
+	
 	
 	
 fl::Engine* engine = new fl::Engine;
-engine->setName("Hoover");
+engine->setName("ar_tracker_cookies_jackie");
 
 fl::InputVariable* inputVariable1 = new fl::InputVariable;
 inputVariable1->setEnabled(true);
@@ -299,14 +303,14 @@ inputVariable1->setName("ar_pose_x");
 inputVariable1->setRange(-1.000, 1.000);
 inputVariable1->addTerm(new fl::Trapezoid("Far_Left", -30.000, -0.800, -0.740, -0.510));
 inputVariable1->addTerm(new fl::Triangle("Left", -0.660, -0.360, 0.000));
-inputVariable1->addTerm(new fl::Triangle("Center", -0.222, 0.000, 0.222));
+inputVariable1->addTerm(new fl::Triangle("Center", -0.350, 0.000, 0.350));
 inputVariable1->addTerm(new fl::Triangle("Right", 0.000, 0.366, 0.674));
 inputVariable1->addTerm(new fl::Trapezoid("Far_Right", 0.538, 0.730, 10.000, 30.000));
 engine->addInputVariable(inputVariable1);
 
 fl::InputVariable* inputVariable2 = new fl::InputVariable;
 inputVariable2->setEnabled(true);
-inputVariable2->setName("ar_pose_y");
+inputVariable2->setName("ar_pose_z");
 inputVariable2->setRange(-2.000, 2.000);
 inputVariable2->addTerm(new fl::Ramp("too_close", -0.600, -1.576));
 inputVariable2->addTerm(new fl::Triangle("far", 0.000, 0.660, 1.268));
@@ -317,12 +321,12 @@ engine->addInputVariable(inputVariable2);
 
 fl::InputVariable* inputVariable3 = new fl::InputVariable;
 inputVariable3->setEnabled(true);
-inputVariable3->setName("ar_pose_z");
+inputVariable3->setName("ar_pose_y");
 inputVariable3->setRange(-2.000, 2.000);
 inputVariable3->addTerm(new fl::Ramp("too_low", 0.600, 1.444));
-inputVariable3->addTerm(new fl::Triangle("high", -1.232, -0.668, 0.000));
-inputVariable3->addTerm(new fl::Triangle("centered", -0.360, 0.000, 0.360));
 inputVariable3->addTerm(new fl::Triangle("low", 0.000, 0.672, 1.424));
+inputVariable3->addTerm(new fl::Triangle("centered", -0.360, 0.000, 0.360));
+inputVariable3->addTerm(new fl::Triangle("high", -1.232, -0.668, 0.000));
 inputVariable3->addTerm(new fl::Ramp("too_high", -0.600, -1.424));
 engine->addInputVariable(inputVariable3);
 
@@ -335,27 +339,27 @@ outputVariable1->setDefuzzifier(new fl::Centroid(200));
 outputVariable1->setDefaultValue(0.000);
 outputVariable1->setLockValidOutput(false);
 outputVariable1->setLockOutputRange(false);
-outputVariable1->addTerm(new fl::Gaussian("stay", 0.000, 0.070));
-outputVariable1->addTerm(new fl::SShape("go_far_left", 0.500, 1.000));
-outputVariable1->addTerm(new fl::Gaussian("go_left", 0.280, -0.080));
-outputVariable1->addTerm(new fl::Gaussian("go_right", -0.280, -0.080));
-outputVariable1->addTerm(new fl::ZShape("go_far_right", -1.000, -0.500));
+outputVariable1->addTerm(new fl::SShape("go_far_right", 0.260, 0.760));
+outputVariable1->addTerm(new fl::Gaussian("go_right", 0.260, -0.080));
+outputVariable1->addTerm(new fl::Gaussian("stay", 0.000, 0.040));
+outputVariable1->addTerm(new fl::Gaussian("go_left", -0.260, -0.080));
+outputVariable1->addTerm(new fl::ZShape("go_far_left", -0.800, -0.240));
 engine->addOutputVariable(outputVariable1);
 
 fl::OutputVariable* outputVariable2 = new fl::OutputVariable;
 outputVariable2->setEnabled(true);
 outputVariable2->setName("cmd_x_vel");
-outputVariable2->setRange(-2.000, 2.000);
+outputVariable2->setRange(-1.000, 1.000);
 outputVariable2->fuzzyOutput()->setAccumulation(new fl::Maximum);
 outputVariable2->setDefuzzifier(new fl::Centroid(200));
 outputVariable2->setDefaultValue(0.000);
 outputVariable2->setLockValidOutput(false);
 outputVariable2->setLockOutputRange(false);
-outputVariable2->addTerm(new fl::ZShape("fast_backward", -2.000, -0.120));
-outputVariable2->addTerm(new fl::Gaussian("backward", -0.800, 0.250));
-outputVariable2->addTerm(new fl::Gaussian("stay", 0.000, 0.180));
-outputVariable2->addTerm(new fl::Gaussian("forward", 0.830, 0.250));
-outputVariable2->addTerm(new fl::SShape("fast_forward", 0.120, 2.000));
+outputVariable2->addTerm(new fl::ZShape("fast_backward", -0.860, -0.620));
+outputVariable2->addTerm(new fl::Gaussian("backward", -0.340, 0.105));
+outputVariable2->addTerm(new fl::Gaussian("stay", 0.000, 0.070));
+outputVariable2->addTerm(new fl::Gaussian("forward", 0.360, 0.105));
+outputVariable2->addTerm(new fl::SShape("fast_forward", 0.580, 0.860));
 engine->addOutputVariable(outputVariable2);
 
 fl::OutputVariable* outputVariable3 = new fl::OutputVariable;
@@ -367,11 +371,11 @@ outputVariable3->setDefuzzifier(new fl::Centroid(200));
 outputVariable3->setDefaultValue(0.000);
 outputVariable3->setLockValidOutput(false);
 outputVariable3->setLockOutputRange(false);
-outputVariable3->addTerm(new fl::Gaussian("go_up", 0.350, 0.100));
-outputVariable3->addTerm(new fl::Gaussian("stay", 0.000, 0.050));
-outputVariable3->addTerm(new fl::Gaussian("go_down", -0.350, 0.100));
-outputVariable3->addTerm(new fl::ZShape("go_lower", -1.000, -0.500));
-outputVariable3->addTerm(new fl::SShape("go_higher", 0.500, 1.000));
+outputVariable3->addTerm(new fl::SShape("go_lower", 0.200, 1.000));
+outputVariable3->addTerm(new fl::Gaussian("go_down", 0.290, 0.100));
+outputVariable3->addTerm(new fl::Gaussian("stay", 0.000, -0.090));
+outputVariable3->addTerm(new fl::Gaussian("go_up", -0.270, 0.100));
+outputVariable3->addTerm(new fl::ZShape("go_higher", -1.000, -0.240));
 engine->addOutputVariable(outputVariable3);
 
 fl::RuleBlock* ruleBlock = new fl::RuleBlock;
@@ -380,24 +384,22 @@ ruleBlock->setName("");
 ruleBlock->setConjunction(new fl::Minimum);
 ruleBlock->setDisjunction(new fl::Maximum);
 ruleBlock->setActivation(new fl::Minimum);
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Left then cmd_y_vel is go_far_right", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Left then cmd_y_vel is go_far_left", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Left then cmd_y_vel is go_left", engine));
 ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Center then cmd_y_vel is stay", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Left then cmd_y_vel is go_right", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Right then cmd_y_vel is go_far_left", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Right then cmd_x_vel is stay", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is too_close then cmd_x_vel is fast_backward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is close then cmd_x_vel is backward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is centered then cmd_x_vel is stay", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is too_far then cmd_x_vel is fast_forward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is far then cmd_x_vel is forward", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is too_high then cmd_z_vel is go_lower", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is high then cmd_z_vel is go_down", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is centered then cmd_y_vel is stay", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is low then cmd_z_vel is go_up", engine));
-ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is too_low then cmd_z_vel is go_higher", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Right then cmd_y_vel is go_right", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_x is Far_Right then cmd_y_vel is go_far_right", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is too_close then cmd_x_vel is fast_backward", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is close then cmd_x_vel is backward", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is centered then cmd_x_vel is stay", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is too_far then cmd_x_vel is fast_forward", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_z is far then cmd_x_vel is forward", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is too_high then cmd_z_vel is go_lower", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is high then cmd_z_vel is go_down", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is centered then cmd_z_vel is stay", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is low then cmd_z_vel is go_up", engine));
+ruleBlock->addRule(fl::Rule::parse("if ar_pose_y is too_low then cmd_z_vel is go_higher", engine));
 engine->addRuleBlock(ruleBlock);
-
-
 
 
 
@@ -526,10 +528,11 @@ int main(int argc, char **argv)
   ros::Subscriber  ar_track_alvar_pose	   = n.subscribe(n.resolveName("visualization_marker"),50, ar_track_pose);
   //tag_infos[0] = TagInfoAce(0, engine, input , output);
 
+int ar_track_alvar_tag_tracking = 1;
   
-  tag_infos[0] = TagInfoAce(10);
+  tag_infos[0] = TagInfoAce(ar_track_alvar_tag_tracking);
   tag_infos[1] = TagInfoAce(170);
-  tag_infos[2] = TagInfoAce(10);
+  tag_infos[2] = TagInfoAce(0);
   tag_infos[3] = TagInfoAce(tagid_Sonar_Elevation_Controller);  
   num_tags = 4;
   
@@ -575,19 +578,19 @@ int main(int argc, char **argv)
 			  output_velocity_z = FuzzyController_5Rules_Sonar_Elevation(sonar_reading,700);
 		  }
 		  
-		  if ((incoming_tag == 10) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates/5)))
+		  if ((incoming_tag == ar_track_alvar_tag_tracking) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates/5)))
 		  {
-			  double inputs[3] = {tag_pose_x,tag_pose_y,tag_pose_z};
+			  double inputs[3] = {tag_pose_x,tag_pose_z,tag_pose_y};
 				  
-			  double desired_inputs[3] = {0.0,2.0,0.0};
-
+			  double desired_inputs[3] = {0,tag_pose_z,tag_pose_y};
+				//original input values xin=0, zin=2 and yin=0
 			  ROS_INFO("Calling main control scheme");
 			  double* outputs = FuzzyController_ArTracking_Main(inputs, desired_inputs);
 			  ROS_INFO("Extracting outputs");
-			  ROS_INFO("They are: X=%f Y=%f Z=%f", outputs[0], outputs[1], outputs[2]);
-			  output_velocity_x = outputs[0];
-			  output_velocity_z = outputs[1];
-			  output_velocity_y = outputs[2];
+			  ROS_INFO("They are: Y=%f X=%f Z=%f", outputs[0], outputs[1], outputs[2]);
+			  output_velocity_y= outputs[0];
+			  output_velocity_x = outputs[1];
+			  output_velocity_z = outputs[2];
 			  
 		  }
 		  if ((incoming_tag > 0) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates)))

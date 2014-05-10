@@ -1,5 +1,5 @@
 [System]
-Name='Hoover'
+Name='ar_tracker_cookies_jackie'
 Type='mamdani'
 NumInputs=3
 NumOutputs=3
@@ -17,13 +17,13 @@ Range=[-1.000 1.000]
 NumMFs=5
 MF1='Far_Left':'trapmf',[-30.000 -0.800 -0.740 -0.510]
 MF2='Left':'trimf',[-0.660 -0.360 0.000]
-MF3='Center':'trimf',[-0.222 0.000 0.222]
+MF3='Center':'trimf',[-0.350 0.000 0.350]
 MF4='Right':'trimf',[0.000 0.366 0.674]
 MF5='Far_Right':'trapmf',[0.538 0.730 10.000 30.000]
 
 [Input2]
 Enabled=1
-Name='ar_pose_y'
+Name='ar_pose_z'
 Range=[-2.000 2.000]
 NumMFs=5
 MF1='too_close':'rampmf',[-0.600 -1.576]
@@ -34,13 +34,13 @@ MF5='too_far':'rampmf',[0.600 1.576]
 
 [Input3]
 Enabled=1
-Name='ar_pose_z'
+Name='ar_pose_y'
 Range=[-2.000 2.000]
 NumMFs=5
 MF1='too_low':'rampmf',[0.600 1.444]
-MF2='high':'trimf',[-1.232 -0.668 0.000]
+MF2='low':'trimf',[0.000 0.672 1.424]
 MF3='centered':'trimf',[-0.360 0.000 0.360]
-MF4='low':'trimf',[0.000 0.672 1.424]
+MF4='high':'trimf',[-1.232 -0.668 0.000]
 MF5='too_high':'rampmf',[-0.600 -1.424]
 
 [Output1]
@@ -51,25 +51,25 @@ Default=0.000
 LockValid=0
 LockRange=0
 NumMFs=5
-MF1='stay':'gaussmf',[0.070 0.000]
-MF2='go_far_left':'smf',[0.500 1.000]
-MF3='go_left':'gaussmf',[-0.080 0.280]
-MF4='go_right':'gaussmf',[-0.080 -0.280]
-MF5='go_far_right':'zmf',[-1.000 -0.500]
+MF1='go_far_right':'smf',[0.260 0.760]
+MF2='go_right':'gaussmf',[-0.080 0.260]
+MF3='stay':'gaussmf',[0.040 0.000]
+MF4='go_left':'gaussmf',[-0.080 -0.260]
+MF5='go_far_left':'zmf',[-0.800 -0.240]
 
 [Output2]
 Enabled=1
 Name='cmd_x_vel'
-Range=[-2.000 2.000]
+Range=[-1.000 1.000]
 Default=0.000
 LockValid=0
 LockRange=0
 NumMFs=5
-MF1='fast_backward':'zmf',[-2.000 -0.120]
-MF2='backward':'gaussmf',[0.250 -0.800]
-MF3='stay':'gaussmf',[0.180 0.000]
-MF4='forward':'gaussmf',[0.250 0.830]
-MF5='fast_forward':'smf',[0.120 2.000]
+MF1='fast_backward':'zmf',[-0.860 -0.620]
+MF2='backward':'gaussmf',[0.105 -0.340]
+MF3='stay':'gaussmf',[0.070 0.000]
+MF4='forward':'gaussmf',[0.105 0.360]
+MF5='fast_forward':'smf',[0.580 0.860]
 
 [Output3]
 Enabled=1
@@ -79,25 +79,25 @@ Default=0.000
 LockValid=0
 LockRange=0
 NumMFs=5
-MF1='go_up':'gaussmf',[0.100 0.350]
-MF2='stay':'gaussmf',[0.050 0.000]
-MF3='go_down':'gaussmf',[0.100 -0.350]
-MF4='go_lower':'zmf',[-1.000 -0.500]
-MF5='go_higher':'smf',[0.500 1.000]
+MF1='go_lower':'smf',[0.200 1.000]
+MF2='go_down':'gaussmf',[0.100 0.290]
+MF3='stay':'gaussmf',[-0.090 0.000]
+MF4='go_up':'gaussmf',[0.100 -0.270]
+MF5='go_higher':'zmf',[-1.000 -0.240]
 
 [Rules]
 1.000 0.000 0.000 , 5.000 0.000 0.000 (1.000) : 1
-3.000 0.000 0.000 , 1.000 0.000 0.000 (1.000) : 1
 2.000 0.000 0.000 , 4.000 0.000 0.000 (1.000) : 1
+3.000 0.000 0.000 , 3.000 0.000 0.000 (1.000) : 1
 4.000 0.000 0.000 , 2.000 0.000 0.000 (1.000) : 1
-5.000 0.000 0.000 , 0.000 3.000 0.000 (1.000) : 1
+5.000 0.000 0.000 , 1.000 0.000 0.000 (1.000) : 1
 0.000 1.000 0.000 , 0.000 1.000 0.000 (1.000) : 1
 0.000 4.000 0.000 , 0.000 2.000 0.000 (1.000) : 1
 0.000 3.000 0.000 , 0.000 3.000 0.000 (1.000) : 1
 0.000 5.000 0.000 , 0.000 5.000 0.000 (1.000) : 1
 0.000 2.000 0.000 , 0.000 4.000 0.000 (1.000) : 1
-0.000 0.000 5.000 , 0.000 0.000 4.000 (1.000) : 1
-0.000 0.000 2.000 , 0.000 0.000 3.000 (1.000) : 1
-0.000 0.000 3.000 , 1.000 0.000 0.000 (1.000) : 1
-0.000 0.000 4.000 , 0.000 0.000 1.000 (1.000) : 1
+0.000 0.000 5.000 , 0.000 0.000 1.000 (1.000) : 1
+0.000 0.000 4.000 , 0.000 0.000 2.000 (1.000) : 1
+0.000 0.000 3.000 , 0.000 0.000 3.000 (1.000) : 1
+0.000 0.000 2.000 , 0.000 0.000 4.000 (1.000) : 1
 0.000 0.000 1.000 , 0.000 0.000 5.000 (1.000) : 1
