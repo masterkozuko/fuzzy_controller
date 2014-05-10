@@ -200,9 +200,9 @@ double* FuzzyController_ArTracking_Main(double* current_position, double* target
 		{
 			found = true;
 			output = tag_infos[i].processInput(3, current_position[0] - target_position[0], 
-												current_position[1] - target_position[1], 
-												current_position[2] - target_position[2]);
-			ROS_INFO("Found tag %d, processing input",incoming_tag);
+										  current_position[1] - target_position[1], 
+										  current_position[2] - target_position[2]);
+			ROS_INFO("For tag %d, processing input \nerrorX =%f, errorZ =%f, errorY =%f,",incoming_tag,output[0],output[1],output[2]);
 			break;
 		}
 	}
@@ -291,9 +291,6 @@ void setEngineArTracking_main_control(TagInfoAce& ts)
 
 	
 	
-	
-	
-	
 fl::Engine* engine = new fl::Engine;
 engine->setName("ar_tracker_cookies_jackie");
 
@@ -355,11 +352,11 @@ outputVariable2->setDefuzzifier(new fl::Centroid(200));
 outputVariable2->setDefaultValue(0.000);
 outputVariable2->setLockValidOutput(false);
 outputVariable2->setLockOutputRange(false);
-outputVariable2->addTerm(new fl::ZShape("fast_backward", -0.860, -0.620));
-outputVariable2->addTerm(new fl::Gaussian("backward", -0.340, 0.105));
-outputVariable2->addTerm(new fl::Gaussian("stay", 0.000, 0.070));
-outputVariable2->addTerm(new fl::Gaussian("forward", 0.360, 0.105));
-outputVariable2->addTerm(new fl::SShape("fast_forward", 0.580, 0.860));
+outputVariable2->addTerm(new fl::ZShape("fast_backward", -1.000, -0.200));
+outputVariable2->addTerm(new fl::Gaussian("backward", -0.290, 0.100));
+outputVariable2->addTerm(new fl::Bell("stay", 0.000, 0.100, 3.000));
+outputVariable2->addTerm(new fl::Gaussian("forward", 0.290, 0.100));
+outputVariable2->addTerm(new fl::SShape("fast_forward", 0.200, 1.000));
 engine->addOutputVariable(outputVariable2);
 
 fl::OutputVariable* outputVariable3 = new fl::OutputVariable;
@@ -405,12 +402,16 @@ engine->addRuleBlock(ruleBlock);
 
 
 
+
+
+
+
 	
 	
-	ts.setEngine(engine, 3, inputVariable1, outputVariable1,
-	inputVariable2, outputVariable2, 
-	inputVariable3, outputVariable3);
-	ROS_INFO("Set up fuzzy system for Tracking ArTag id:10");
+	ts.setEngine(engine, 3, 	inputVariable1, outputVariable1,
+						inputVariable2, outputVariable2, 
+						inputVariable3, outputVariable3);
+	ROS_INFO("Set up fuzzy system for Tracking ArTag");
 	
 }
 	
@@ -580,12 +581,12 @@ int ar_track_alvar_tag_tracking = 1;
 		  
 		  if ((incoming_tag == ar_track_alvar_tag_tracking) & ((TimeHereSeconds - LastTagTimeSeconds) < (timeOut_betweenControlStates/5)))
 		  {
-			  double inputs[3] = {tag_pose_x,tag_pose_z,tag_pose_y};
+			  double current[3] = {tag_pose_x,tag_pose_z,tag_pose_y};
 				  
-			  double desired_inputs[3] = {0,tag_pose_z,tag_pose_y};
+			  double desired_inputs[3] = {0.0,2.0,0.0};
 				//original input values xin=0, zin=2 and yin=0
 			  ROS_INFO("Calling main control scheme");
-			  double* outputs = FuzzyController_ArTracking_Main(inputs, desired_inputs);
+			  double* outputs = FuzzyController_ArTracking_Main(current, desired_inputs);
 			  ROS_INFO("Extracting outputs");
 			  ROS_INFO("They are: Y=%f X=%f Z=%f", outputs[0], outputs[1], outputs[2]);
 			  output_velocity_y= outputs[0];
@@ -617,7 +618,7 @@ int ar_track_alvar_tag_tracking = 1;
 		  ControlCommand cmd =   ControlCommand(output_velocity_y,output_velocity_x,0,output_velocity_z);
 		  geometry_msgs::Twist cmdT;
 		  cmdT.linear.z = cmd.gaz;
-		  cmdT.linear.x = -cmd.pitch;
+		  cmdT.linear.x = cmd.pitch;
 		  cmdT.linear.y = -cmd.roll;
 		  cmdT.angular.x = cmdT.angular.y =0.1;
 		  vel_pub.publish(cmdT);
