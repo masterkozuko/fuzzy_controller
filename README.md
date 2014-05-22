@@ -13,3 +13,15 @@ Fuzzy_tracker uses the front camera to detect a AR tag, and attempts to keep the
 TODO: ROW YAW PITCH Control for both systems
 
 Jackie Ortiz Josue Cruz-Lambert
+
+
+To RUN
+========================
+
+You need to connect to ArDrone 2.0 via wifi.
+then start up the ar_track_alavr pacakge
+Have a way to control the ardrone manuall, i recommend the tum_drone drone_gui program from Tum_ardrone pkg
+then rosrun fuzzy_controller fuzzy_tracker
+
+When you send the takeoff command to the ardrone, the fuzzy controller will start sending out command. Send the land command to stop it.
+
